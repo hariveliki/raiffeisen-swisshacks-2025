@@ -2,7 +2,7 @@
 # From GenAI to Agentic AI: Hacking the Future of Banking
 
 ## Introduction:
-Agentic AI is the next hype around the path to adoption of institutions with generative AI technologies. We as Raiffeisen see lots of opportunities that can be adressed with these new capabilities. Supported with the Microsoft tech stack you inspire with new solutions to adopt these new possibilities to gain effectivity and efficiency.
+Agentic AI is the next hype around the path to adoption of institutions with generative AI technologies. We as Raiffeisen see lots of opportunities that can be adressed with these new capabilities. Supported by Microsoft and the Microsoft tech stack you inspire with new solutions to adopt these new possibilities to gain effectivity and efficiency.
 
 #### What is the current problem?
 As we see broad adoption you can choose out of a collection of possibilities or develop your own approach. The most interesting problems are
