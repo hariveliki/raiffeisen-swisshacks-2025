@@ -15,13 +15,10 @@ usw.
 
 Variant (b): Extended image search, d.h. multiple images can be uploaded to narrow down the search context: house, school, supermarket, lake, forest, sports stadium, etc.
 
-
 ===> Search Web for real estate objects based on created criteria set (use APIs from real estate portals)
 
 
-
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 
 
 **2 - Retirement planning**
@@ -39,12 +36,7 @@ Based on this, suitable investment strategies are proposed.
 
 
 
-
-
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
 
 
 **3 - Augmenting Advisors**
@@ -62,9 +54,6 @@ Functionalities:
 - Client History: The system accesses the entire (fictional) client history, including previous interactions, transactions, and preferences.
 - Personalized Recommendations: Based on the analysis of real-time data and client history, the system generates personalized recommendations and suggestions for the advisor.
 - Proactive Notifications: The system proactively informs the advisor about important events or changes that may occur during the meeting.
-
-
-
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
