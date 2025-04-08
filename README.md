@@ -26,7 +26,7 @@ We want to see solutions that address the problem and show a feasable approach t
 
 ## The Pitch:
 
-Insert Pitchdeck here
+Insert Pitchdeck here 
 
 ## Deep Dive Slides:
 
@@ -41,8 +41,9 @@ Insert further information here
 You will mostly use public available data like informations on the website. If needed we will provide further data for the chosen use case.
 
 #### Important technologies: 
-* You can use the tools provided by our supporting partner Microsoft with Copilot Studio and MS Azure possibilities
-* You can also solve the challenge with tools you are more familiar with 
+* You can use models from Microsoft Azure we provide 
+* You can also solve the challenge with tools you are more familiar with
+* frontend technology is of your choice 
 
 ## Judging Criteria:
 
