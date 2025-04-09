@@ -6,16 +6,16 @@
 
 Image search as a basis ("image 2 criterias"):
 
-Variant (a): Upload a picture of a house, that best matches your own wishes. Based on this, the best possible offers are sought. In addition, possible secondary features can be derived from the image content and suggested for selection, z.B.
+Variant (a): Upload a picture of a house, that best matches your own wishes. Based on this, the best possible offers are sought. In addition, possible secondary features can be derived from the image content (and/or its connotation) and suggested for selection, for example:
 
-Farmhouse => next farm shop, Steiner school 
-Bauhaus style => next theater, cinema
-Penthouse in high-rise building => Urban / Agglomeration,
-usw.
+- Farmhouse => next farm shop, Steiner school ?
+- Bauhaus style => next theater, cinema ?
+- Penthouse in high-rise building => Urban / Agglomeration ?
+- etc.
 
 Variant (b): Extended image search, d.h. multiple images can be uploaded to narrow down the search context: house, school, supermarket, lake, forest, sports stadium, etc.
 
-===> Search Web for real estate objects based on created criteria set (use APIs from real estate portals)
+===> Search Web for real estate objects based on created criteria set (e.g. use APIs from real estate portals)
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -32,7 +32,7 @@ Build an interactive determination of interests and preferences to create a holi
 - From the respective state of the preference list, a sketch for a life model is formulated, e.g.  Living in rented accommodation in the upscale segment, two cinema-theater visits per month, 4-8 long-distance trips p.a.
 
 The basic costs (living, food, hobbies, health, etc.) are calculated for this life model and compared with the available funds.
-Based on this, suitable investment strategies are proposed.
+Based on this, suitable investment strategies are proposed and/or projections based on the current savings.
 
 
 
@@ -77,9 +77,9 @@ Solution approaches to meet specific requirements for summaries of extensive mee
 
 *Develop a system to analyze ESG factors using public information for company.*
 
-Solution could look this:
+Solution could look like this:
 
 1. Find qualitative public data of a given company / companies 
-2. find ESG-relevant information for a given time frame 
-3. extract for each information chunk the ESG impact (relevance) and classify if positive / negative 
-4. sum it up to an overall ESG impact report of the given company / companies
+2. Find ESG-relevant information in a given time frame 
+3. Extract for each information chunk the ESG impact (relevance) and classify if positive / negative 
+4. Sum it up to an overall ESG impact report of the given company / companies
