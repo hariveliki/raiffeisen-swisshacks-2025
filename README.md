@@ -53,7 +53,7 @@ You will mostly use public available data like informations on the website. If n
 
 
 ## Point of Contact:
-* Raiffeisen has persons at the event out of the innovations management department
+* Raiffeisen has persons at the event out of the innovations management department (Saturday: from 09h to 12h + from 17h to 20h)
 * come to the booth
 * we also have 3rd level support for Azure available if needed
 
