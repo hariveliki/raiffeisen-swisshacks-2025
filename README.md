@@ -10,7 +10,7 @@ As we see broad adoption you can choose out of a collection of possibilities or 
 * Augmenting Advisors: Provide agents that support advisors during a meeting based on real-time data and client history.
 * Optimize meeting summaries  with AI agents: Develop an app to record, transcribe Swiss German audio, and summarize using Agentic AI Workflows that ensure accuracy and completeness.
 * Retirement Planning Chatbot: Enhance a chatbot to provide retirement advice, projections and product recommendations using multimodal LLMs.
-* ESG Research and Reporting: Develop a system to analyze ESG factors using public information.
+* ESG Research and Reporting: Develop a system to analyze ESG factors using public information.
 
 #### Users of a solution: 
 The users will be different from solved problems. Most address usage through internal users or advisors. Often the solution focusses on augmenting the customer experience.
