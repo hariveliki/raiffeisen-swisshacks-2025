@@ -59,5 +59,5 @@ You will mostly use public available data like informations on the website. If n
 
 ## Price - the winning team members will each receive:
 * Winners can show their prototype in an innovation board and could be provided with support and financials to further develop the solution.
-* You get vouchers for lunch and an additional gift
+* You get vouchers for diner/lunch and an additional gift
 
