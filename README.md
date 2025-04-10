@@ -53,6 +53,8 @@ You will mostly use public available data like informations on the website. If n
 
 ## Point of Contact:
 * Raiffeisen has persons at the event out of the innovations management department
+* come to the booth
+* we also have 3rd level support for Azure available if needed
 
 ## Price - the winning team members will each receive:
 * Winners can show their prototype in an innovation board and could be provided with support and financials to further develop the solution.
