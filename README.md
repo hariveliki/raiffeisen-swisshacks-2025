@@ -17,6 +17,7 @@ The users will be different from solved problems. Most address usage through int
 
 #### Use case of a solution: 
 You choose one of the described use cases or choose an own scenario where you think agentic AI can boost the use case.
+Find some ideas here: https://github.com/SwissHacks-2025/raiffeisen/blob/main/Use_Case_Challenge_Examples.md 
 
 ## Expected Outcome:
 We want to see solutions that address the problem and show a feasable approach to solve it. You use your techstack or the provided Azure ressources. 
