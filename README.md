@@ -25,7 +25,7 @@ We want to see solutions that address the problem and show a feasable approach t
 * You follow the standard SwissHacks structures
 
 ## Deep Dive Slides:
-Insert Deep Dive Slides here:
+https://github.com/SwissHacks-2025/raiffeisen/blob/main/SwissHacks_2025_DeepDive-Raiffeisen.pdf
 
 ## Further Information:
 Please find further informations in the attached documents
