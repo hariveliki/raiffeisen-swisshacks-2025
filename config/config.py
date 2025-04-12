@@ -1,0 +1,24 @@
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
+# OpenAI API configuration
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+
+# Data paths
+CLIENT_STATE_PATH = os.path.abspath("data/client_state.xlsx")
+PRODUCT_PORTFOLIO_PATH = os.path.abspath("data/product_portfolio.docx")
+TRANSCRIPT_PATH = os.path.abspath("data/transcript.m4a")
+
+# Vector store path
+VECTOR_STORE_PATH = os.path.abspath("data/vector_store")
+
+# Model configuration
+LLM_MODEL = "gpt-4"  # or "gpt-3.5-turbo" for faster but less accurate results
+EMBEDDING_MODEL = "text-embedding-ada-002"
+
+# Agent configuration
+CHUNK_SIZE = 1000
+CHUNK_OVERLAP = 200
