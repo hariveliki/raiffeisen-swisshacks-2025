@@ -2,8 +2,6 @@ from app.agents.base_agent import BaseAgent
 from app.utils.data_loader import DataLoader
 from app.agents.data_retrieval_agent import DataRetrievalAgent
 from app.agents.dialogue_analysis_agent import DialogueAnalysisAgent
-from langchain.prompts import PromptTemplate
-from langchain.chains import LLMChain
 
 
 class RecommendationAgent(BaseAgent):
@@ -68,19 +66,24 @@ class RecommendationAgent(BaseAgent):
         List the unmet needs in order of priority, with a brief explanation for each.
         """
 
-        prompt = PromptTemplate(
-            input_variables=["client_data", "topics", "emotional_insights"],
-            template=prompt_template,
-        )
-
-        chain = LLMChain(llm=self.llm, prompt=prompt)
-
-        # Get unmet needs from LLM
-        unmet_needs = chain.run(
+        # Format the prompt with the client data, topics, and emotional insights
+        formatted_prompt = prompt_template.format(
             client_data=client_data_str,
             topics=topics_str,
             emotional_insights=emotional_insights,
         )
+
+        # Create messages for the API call
+        messages = [
+            {
+                "role": "system",
+                "content": "You are a financial advisor specializing in identifying unmet client needs.",
+            },
+            {"role": "user", "content": formatted_prompt},
+        ]
+
+        # Get unmet needs from Azure OpenAI
+        unmet_needs = self.get_completion(messages)
 
         # Process into list (in a real system, we'd use more structured output parsing)
         needs_list = [need.strip() for need in unmet_needs.split("\n") if need.strip()]
@@ -138,15 +141,8 @@ class RecommendationAgent(BaseAgent):
         List your recommendations in priority order (most important first).
         """
 
-        prompt = PromptTemplate(
-            input_variables=["client_data", "unmet_needs", "product_info"],
-            template=prompt_template,
-        )
-
-        chain = LLMChain(llm=self.llm, prompt=prompt)
-
-        # Get product recommendations from LLM
-        recommendations = chain.run(
+        # Format the prompt with the client data, unmet needs, and product info
+        formatted_prompt = prompt_template.format(
             client_data=client_data_str,
             unmet_needs=unmet_needs_str,
             product_info=(
@@ -155,6 +151,18 @@ class RecommendationAgent(BaseAgent):
                 else product_info
             ),
         )
+
+        # Create messages for the API call
+        messages = [
+            {
+                "role": "system",
+                "content": "You are a financial advisor specializing in product recommendations.",
+            },
+            {"role": "user", "content": formatted_prompt},
+        ]
+
+        # Get product recommendations from Azure OpenAI
+        recommendations = self.get_completion(messages)
 
         # Process into list (in a real system, we'd use more structured output parsing)
         recommendation_list = [
@@ -213,25 +221,25 @@ class RecommendationAgent(BaseAgent):
         Format each step as: "ACTION: [description] - TIMEFRAME: [when] - PURPOSE: [why]"
         """
 
-        prompt = PromptTemplate(
-            input_variables=[
-                "client_goals",
-                "advisor_recommendations",
-                "action_items",
-                "recommendations",
-            ],
-            template=prompt_template,
-        )
-
-        chain = LLMChain(llm=self.llm, prompt=prompt)
-
-        # Get next steps from LLM
-        next_steps = chain.run(
+        # Format the prompt with the summary sections and recommendations
+        formatted_prompt = prompt_template.format(
             client_goals=client_goals,
             advisor_recommendations=advisor_recommendations,
             action_items=action_items,
             recommendations=recommendations_str,
         )
+
+        # Create messages for the API call
+        messages = [
+            {
+                "role": "system",
+                "content": "You are a financial advisor specializing in action planning.",
+            },
+            {"role": "user", "content": formatted_prompt},
+        ]
+
+        # Get next steps from Azure OpenAI
+        next_steps = self.get_completion(messages)
 
         # Process into list
         next_steps_list = [

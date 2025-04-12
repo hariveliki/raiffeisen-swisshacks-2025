@@ -1,8 +1,6 @@
 from app.agents.base_agent import BaseAgent
 from app.utils.vector_store import VectorStore
 from app.utils.data_loader import DataLoader
-from langchain.prompts import PromptTemplate
-from langchain.chains import LLMChain
 
 
 class DataRetrievalAgent(BaseAgent):
@@ -77,17 +75,23 @@ class DataRetrievalAgent(BaseAgent):
             Summary:
             """
 
-            prompt = PromptTemplate(
-                input_variables=["query", "results"], template=prompt_template
-            )
-
-            chain = LLMChain(llm=self.llm, prompt=prompt)
-
             # Format results into a single string
             results_text = "\n".join([doc.page_content for doc in results])
 
-            # Get summary from LLM
-            response = chain.run(query=query, results=results_text)
+            # Format the prompt with the query and results
+            formatted_prompt = prompt_template.format(query=query, results=results_text)
+
+            # Create messages for the API call
+            messages = [
+                {
+                    "role": "system",
+                    "content": "You are a financial data analyst specializing in client information.",
+                },
+                {"role": "user", "content": formatted_prompt},
+            ]
+
+            # Get summary from Azure OpenAI
+            response = self.get_completion(messages)
 
             return {"summary": response, "raw_results": results}
 
@@ -126,17 +130,23 @@ class DataRetrievalAgent(BaseAgent):
             Summary:
             """
 
-            prompt = PromptTemplate(
-                input_variables=["query", "results"], template=prompt_template
-            )
-
-            chain = LLMChain(llm=self.llm, prompt=prompt)
-
             # Format results into a single string
             results_text = "\n".join([doc.page_content for doc in results])
 
-            # Get summary from LLM
-            response = chain.run(query=query, results=results_text)
+            # Format the prompt with the query and results
+            formatted_prompt = prompt_template.format(query=query, results=results_text)
+
+            # Create messages for the API call
+            messages = [
+                {
+                    "role": "system",
+                    "content": "You are a financial data analyst specializing in product information.",
+                },
+                {"role": "user", "content": formatted_prompt},
+            ]
+
+            # Get summary from Azure OpenAI
+            response = self.get_completion(messages)
 
             return {"summary": response, "raw_results": results}
 

@@ -16,7 +16,7 @@ TRANSCRIPT_PATH = os.path.abspath("data/transcript.m4a")
 VECTOR_STORE_PATH = os.path.abspath("data/vector_store")
 
 # Model configuration
-LLM_MODEL = "gpt-4"  # or "gpt-3.5-turbo" for faster but less accurate results
+LLM_MODEL = "gpt-4o"  # Azure OpenAI deployment name
 EMBEDDING_MODEL = "text-embedding-ada-002"
 
 # Agent configuration

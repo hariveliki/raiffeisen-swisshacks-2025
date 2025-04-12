@@ -1,8 +1,6 @@
 from app.agents.base_agent import BaseAgent
 from app.utils.data_loader import DataLoader
 from app.agents.dialogue_analysis_agent import DialogueAnalysisAgent
-from langchain.prompts import PromptTemplate
-from langchain.chains import LLMChain
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from config.config import CHUNK_SIZE, CHUNK_OVERLAP
 
@@ -47,12 +45,20 @@ class SummarizationAgent(BaseAgent):
         Summary:
         """
 
-        prompt = PromptTemplate(input_variables=["chunk"], template=prompt_template)
+        # Format the prompt with the chunk
+        formatted_prompt = prompt_template.format(chunk=chunk)
 
-        chain = LLMChain(llm=self.llm, prompt=prompt)
+        # Create messages for the API call
+        messages = [
+            {
+                "role": "system",
+                "content": "You are a financial conversation summarizer.",
+            },
+            {"role": "user", "content": formatted_prompt},
+        ]
 
-        # Get summary from LLM
-        chunk_summary = chain.run(chunk=chunk)
+        # Get summary from Azure OpenAI
+        chunk_summary = self.get_completion(messages)
 
         return chunk_summary
 
@@ -92,14 +98,20 @@ class SummarizationAgent(BaseAgent):
         Overall Summary:
         """
 
-        prompt = PromptTemplate(
-            input_variables=["combined_summaries"], template=prompt_template
-        )
+        # Format the prompt with the combined summaries
+        formatted_prompt = prompt_template.format(combined_summaries=combined_summaries)
 
-        chain = LLMChain(llm=self.llm, prompt=prompt)
+        # Create messages for the API call
+        messages = [
+            {
+                "role": "system",
+                "content": "You are a financial conversation summarizer.",
+            },
+            {"role": "user", "content": formatted_prompt},
+        ]
 
-        # Get final summary from LLM
-        final_summary = chain.run(combined_summaries=combined_summaries)
+        # Get final summary from Azure OpenAI
+        final_summary = self.get_completion(messages)
 
         return final_summary
 
@@ -156,22 +168,27 @@ class SummarizationAgent(BaseAgent):
         Keep each section concise but comprehensive. Use bullet points where appropriate.
         """
 
-        prompt = PromptTemplate(
-            input_variables=["transcript", "emotional_insights", "topics"],
-            template=prompt_template,
-        )
-
-        chain = LLMChain(llm=self.llm, prompt=prompt)
-
         # Format topics as a string
         topics_str = "\n".join(topics) if isinstance(topics, list) else topics
 
-        # Get structured summary from LLM
-        structured_output = chain.run(
+        # Format the prompt with the transcript, emotional insights, and topics
+        formatted_prompt = prompt_template.format(
             transcript=self.transcript,
             emotional_insights=emotional_insights,
             topics=topics_str,
         )
+
+        # Create messages for the API call
+        messages = [
+            {
+                "role": "system",
+                "content": "You are a financial conversation analyst specializing in structured summaries.",
+            },
+            {"role": "user", "content": formatted_prompt},
+        ]
+
+        # Get structured summary from Azure OpenAI
+        structured_output = self.get_completion(messages)
 
         # Process the output to extract sections
         sections = {}
@@ -199,40 +216,36 @@ class SummarizationAgent(BaseAgent):
             parts = structured_output.split("**Client's Reactions/Concerns:**")[1]
             sections["client_reactions"] = parts.strip()
 
-        # Include the raw output in case parsing failed
-        sections["full_summary"] = structured_output
-
         return sections
 
     def run(self, summary_type="structured"):
         """
-        Run the summarization agent to create a summary.
+        Run the summarization agent to create a summary of the transcript.
 
         Args:
-            summary_type (str): Type of summary to create ('chunk', 'unified', or 'structured').
+            summary_type (str): Type of summary to create
+                ('chunks', 'structured', or 'full').
 
         Returns:
-            dict or str: The summary.
+            dict or str: The summary results.
         """
         if not self.transcript:
             self.load_transcript()
 
-        if summary_type == "chunk":
-            # Just perform the chunk-based summarization
+        if summary_type == "chunks":
             return self.summarize_transcript_chunks()
-
-        elif summary_type == "unified":
-            # First do chunk summarization, then unify
-            return self.summarize_transcript_chunks()
-
         elif summary_type == "structured":
-            # Get dialogue analysis first
-            dialogue_analysis = self.dialogue_analysis_agent.run()
+            return self.create_structured_summary()
+        elif summary_type == "full":
+            # Get both types of summaries
+            chunk_summary = self.summarize_transcript_chunks()
+            structured_summary = self.create_structured_summary()
 
-            # Create structured summary
-            return self.create_structured_summary(dialogue_analysis)
-
-        else:
             return {
-                "error": f"Invalid summary type: {summary_type}. Use 'chunk', 'unified', or 'structured'."
+                "chunk_summary": chunk_summary,
+                "structured_summary": structured_summary,
             }
+        else:
+            raise ValueError(
+                f"Invalid summary type: {summary_type}. Must be 'chunks', 'structured', or 'full'."
+            )

@@ -1,7 +1,5 @@
 from app.agents.base_agent import BaseAgent
 from app.utils.data_loader import DataLoader
-from langchain.prompts import PromptTemplate
-from langchain.chains import LLMChain
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from config.config import CHUNK_SIZE, CHUNK_OVERLAP
 
@@ -62,14 +60,20 @@ class DialogueAnalysisAgent(BaseAgent):
         Step 3 - Summarize emotional insights:
         """
 
-        prompt = PromptTemplate(
-            input_variables=["transcript"], template=prompt_template
-        )
+        # Format the prompt with the transcript
+        formatted_prompt = prompt_template.format(transcript=self.transcript)
 
-        chain = LLMChain(llm=self.llm, prompt=prompt)
+        # Create messages for the API call
+        messages = [
+            {
+                "role": "system",
+                "content": "You are a financial conversation analyst specializing in emotional analysis.",
+            },
+            {"role": "user", "content": formatted_prompt},
+        ]
 
-        # Get analysis from LLM
-        analysis = chain.run(transcript=self.transcript)
+        # Get analysis from Azure OpenAI
+        analysis = self.get_completion(messages)
 
         # Extract just the summary from the Chain-of-Thought output
         # (In a real system, we might use more structured output parsing)
@@ -103,14 +107,20 @@ class DialogueAnalysisAgent(BaseAgent):
         Main Topics (in order of importance):
         """
 
-        prompt = PromptTemplate(
-            input_variables=["transcript"], template=prompt_template
-        )
+        # Format the prompt with the transcript
+        formatted_prompt = prompt_template.format(transcript=self.transcript)
 
-        chain = LLMChain(llm=self.llm, prompt=prompt)
+        # Create messages for the API call
+        messages = [
+            {
+                "role": "system",
+                "content": "You are a financial conversation analyst specializing in topic extraction.",
+            },
+            {"role": "user", "content": formatted_prompt},
+        ]
 
-        # Get topics from LLM
-        topics = chain.run(transcript=self.transcript)
+        # Get topics from Azure OpenAI
+        topics = self.get_completion(messages)
 
         # Process the output to return a structured list
         # (In a real system, we'd use more structured output parsing)
@@ -139,14 +149,20 @@ class DialogueAnalysisAgent(BaseAgent):
         Client Questions:
         """
 
-        prompt = PromptTemplate(
-            input_variables=["transcript"], template=prompt_template
-        )
+        # Format the prompt with the transcript
+        formatted_prompt = prompt_template.format(transcript=self.transcript)
 
-        chain = LLMChain(llm=self.llm, prompt=prompt)
+        # Create messages for the API call
+        messages = [
+            {
+                "role": "system",
+                "content": "You are a financial conversation analyst specializing in question extraction.",
+            },
+            {"role": "user", "content": formatted_prompt},
+        ]
 
-        # Get questions from LLM
-        questions = chain.run(transcript=self.transcript)
+        # Get questions from Azure OpenAI
+        questions = self.get_completion(messages)
 
         # Process the output to return a structured list
         question_list = [q.strip() for q in questions.split("\n") if q.strip()]
