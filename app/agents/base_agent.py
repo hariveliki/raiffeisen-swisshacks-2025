@@ -40,7 +40,7 @@ class BaseAgent:
         """
         raise NotImplementedError("Subclasses must implement the 'run' method.")
 
-    def get_completion(self, messages, temperature=None):
+    def get_completion(self, messages, temperature=None, response_format=None):
         """
         Get a completion from the Azure OpenAI API.
 
@@ -58,6 +58,7 @@ class BaseAgent:
             model=self.model_name,
             messages=messages,
             temperature=temperature,
+            response_format=response_format,
         )
 
         return completion.choices[0].message.content

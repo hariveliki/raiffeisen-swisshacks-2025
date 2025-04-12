@@ -20,7 +20,7 @@ class DataLoader:
     """Utility class to load and process data from different file formats."""
 
     @staticmethod
-    def load_client_state() -> str:
+    def load_client_state_txt() -> str:
         try:
             if not os.path.exists(CLIENT_STATE_PATH):
                 print(f"Warning: Client state file not found at {CLIENT_STATE_PATH}")
@@ -36,6 +36,21 @@ class DataLoader:
         except Exception as e:
             print(f"Error loading client state: {e}")
             return ""
+
+    @staticmethod
+    def load_client_state_dict() -> dict:
+        try:
+            if not os.path.exists(CLIENT_STATE_PATH):
+                print(f"Warning: Client state file not found at {CLIENT_STATE_PATH}")
+                return {}
+
+            df = pd.read_csv(CLIENT_STATE_PATH)
+            fields = df["Field"].tolist()
+            values = df["Value"].tolist()
+            return dict(zip(fields, values))
+        except Exception as e:
+            print(f"Error loading client state: {e}")
+            return {}
 
     @staticmethod
     def load_product_portfolio():
@@ -130,6 +145,7 @@ class DataLoader:
 
 
 if __name__ == "__main__":
-    client_data_text = DataLoader.load_client_state()
-    print("Client data text format:")
-    print(client_data_text)
+
+    client_data_dict = DataLoader.load_client_state_dict()
+    print("Client data dictionary format:")
+    print(client_data_dict)
