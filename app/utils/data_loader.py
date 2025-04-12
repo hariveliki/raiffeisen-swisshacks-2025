@@ -2,7 +2,16 @@ import os
 import pandas as pd
 import docx2txt
 import json
-from config.config import CLIENT_STATE_PATH, PRODUCT_PORTFOLIO_PATH, TRANSCRIPT_PATH
+import sys
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
+
+from config.config import (
+    CLIENT_STATE_PATH,
+    PRODUCT_PORTFOLIO_PATH,
+    TRANSCRIPT_PATH,
+    BIASES_PATH,
+)
 from openai import AzureOpenAI
 from dotenv import load_dotenv
 
@@ -11,33 +20,22 @@ class DataLoader:
     """Utility class to load and process data from different file formats."""
 
     @staticmethod
-    def load_client_state():
-        """Load client state from Excel file."""
+    def load_client_state() -> str:
         try:
             if not os.path.exists(CLIENT_STATE_PATH):
                 print(f"Warning: Client state file not found at {CLIENT_STATE_PATH}")
-                return {}
+                return ""
 
-            # Load the Excel file
-            df = pd.read_excel(CLIENT_STATE_PATH)
-
-            # Convert DataFrame to a dictionary format
-            client_data = {}
-
-            # Process each row and structure the data
+            df = pd.read_csv(CLIENT_STATE_PATH)
+            client_data_text = ""
             for _, row in df.iterrows():
-                # This is a simplified approach - adjust based on actual Excel structure
-                if "Category" in df.columns and "Value" in df.columns:
-                    client_data[row["Category"]] = row["Value"]
-                else:
-                    # If structure is different, convert row to dict
-                    row_dict = row.to_dict()
-                    client_data.update(row_dict)
+                row_text = " ".join([f"{col}: {val}" for col, val in row.items()])
+                client_data_text += row_text + "\n"
 
-            return client_data
+            return client_data_text
         except Exception as e:
             print(f"Error loading client state: {e}")
-            return {}
+            return ""
 
     @staticmethod
     def load_product_portfolio():
@@ -103,3 +101,35 @@ class DataLoader:
             f.write(transcript_text)
 
         return transcript_text
+
+    @staticmethod
+    def load_biases():
+        """Load behavioral biases from the CSV file."""
+        try:
+            if not os.path.exists(BIASES_PATH):
+                print(f"Warning: Biases file not found at {BIASES_PATH}")
+                return []
+
+            df = pd.read_csv(BIASES_PATH)
+
+            # Convert DataFrame to a list of dictionaries
+            biases = []
+            for _, row in df.iterrows():
+                bias = {
+                    "category": row["Category"],
+                    "bias": row["Bias"],
+                    "description": row["Description"],
+                    "examples": row["Examples"],
+                }
+                biases.append(bias)
+
+            return biases
+        except Exception as e:
+            print(f"Error loading biases: {e}")
+            return []
+
+
+if __name__ == "__main__":
+    client_data_text = DataLoader.load_client_state()
+    print("Client data text format:")
+    print(client_data_text)

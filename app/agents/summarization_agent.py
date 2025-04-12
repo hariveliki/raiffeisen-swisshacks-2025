@@ -1,3 +1,9 @@
+import os
+import sys
+import json
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
+
 from app.agents.base_agent import BaseAgent
 from app.utils.data_loader import DataLoader
 from app.agents.dialogue_analysis_agent import DialogueAnalysisAgent
@@ -115,74 +121,49 @@ class SummarizationAgent(BaseAgent):
 
         return final_summary
 
-    def create_structured_summary(self, dialogue_analysis=None):
+    def create_structured_summary(self):
         """
-        Create a structured summary with specific sections.
+        Create a structured summary with two sections: meeting notes and action items.
 
         Args:
             dialogue_analysis (dict): Results from the dialogue analysis agent.
 
         Returns:
-            dict: Structured summary with sections.
+            dict: Structured summary with two sections.
         """
         if not self.transcript:
             self.load_transcript()
 
-        # Get dialogue analysis if not provided
-        if not dialogue_analysis:
-            print("Running dialogue analysis...")
-            dialogue_analysis = self.dialogue_analysis_agent.run()
-
-        # Get emotional insights and topics from dialogue analysis
-        emotional_insights = dialogue_analysis.get("emotions", "")
-        topics = dialogue_analysis.get("topics", [])
-
-        # Create structured sections
         prompt_template = """
-        Create a structured summary of the following conversation between a financial advisor and a client.
-        The summary should be organized into specific sections as outlined below.
+        Create a concise summary of the following conversation between a financial advisor and a client.
+        The summary should be organized into exactly two sections as outlined below.
         
         Transcript:
         {transcript}
         
-        Emotional Analysis:
-        {emotional_insights}
-        
-        Main Topics:
-        {topics}
-        
         Please provide the summary in the following format:
         
-        **Client's Goals/Questions:**
-        (List the main goals and questions the client had)
+        Client/Advisor Meeting Notes
+        - [Key point 1]
+        - [Key point 2]
+        - [Key point 3]
         
-        **Advisor's Analysis & Recommendations:**
-        (Summarize the key analyses and specific recommendations the advisor provided)
+        Agreed upon action items
+        - [Action item 1]
+        - [Action item 2]
         
-        **Action Items / Next Steps:**
-        (List concrete next steps agreed upon, with any deadlines or timelines)
-        
-        **Client's Reactions/Concerns:**
-        (Summarize how the client responded to the advice, any concerns raised)
-        
-        Keep each section concise but comprehensive. Use bullet points where appropriate.
+        Keep each point short and clear. Use simple bullet points without any additional formatting.
+        Focus on concrete information and decisions made during the conversation.
         """
 
-        # Format topics as a string
-        topics_str = "\n".join(topics) if isinstance(topics, list) else topics
-
-        # Format the prompt with the transcript, emotional insights, and topics
-        formatted_prompt = prompt_template.format(
-            transcript=self.transcript,
-            emotional_insights=emotional_insights,
-            topics=topics_str,
-        )
+        # Format the prompt with the transcript
+        formatted_prompt = prompt_template.format(transcript=self.transcript)
 
         # Create messages for the API call
         messages = [
             {
                 "role": "system",
-                "content": "You are a financial conversation analyst specializing in structured summaries.",
+                "content": "You are a financial conversation analyst specializing in concise summaries.",
             },
             {"role": "user", "content": formatted_prompt},
         ]
@@ -193,28 +174,16 @@ class SummarizationAgent(BaseAgent):
         # Process the output to extract sections
         sections = {}
 
-        # Parse the sections (simple approach - in a real system we'd use regex or structured output)
-        if "**Client's Goals/Questions:**" in structured_output:
-            parts = structured_output.split("**Client's Goals/Questions:**")[1].split(
-                "**Advisor's Analysis"
+        # Parse the sections
+        if "Client/Advisor Meeting Notes" in structured_output:
+            parts = structured_output.split("Client/Advisor Meeting Notes")[1].split(
+                "Agreed upon action items"
             )[0]
-            sections["client_goals"] = parts.strip()
+            sections["meeting_notes"] = parts.strip()
 
-        if "**Advisor's Analysis & Recommendations:**" in structured_output:
-            parts = structured_output.split(
-                "**Advisor's Analysis & Recommendations:**"
-            )[1].split("**Action Items")[0]
-            sections["advisor_recommendations"] = parts.strip()
-
-        if "**Action Items / Next Steps:**" in structured_output:
-            parts = structured_output.split("**Action Items / Next Steps:**")[1].split(
-                "**Client's Reactions"
-            )[0]
+        if "Agreed upon action items" in structured_output:
+            parts = structured_output.split("Agreed upon action items")[1]
             sections["action_items"] = parts.strip()
-
-        if "**Client's Reactions/Concerns:**" in structured_output:
-            parts = structured_output.split("**Client's Reactions/Concerns:**")[1]
-            sections["client_reactions"] = parts.strip()
 
         return sections
 
@@ -249,3 +218,10 @@ class SummarizationAgent(BaseAgent):
             raise ValueError(
                 f"Invalid summary type: {summary_type}. Must be 'chunks', 'structured', or 'full'."
             )
+
+
+if __name__ == "__main__":
+    summarization_agent = SummarizationAgent()
+    summary = summarization_agent.run(summary_type="structured")
+    with open("output/summarization_agent_output.json", "w") as f:
+        json.dump(summary, f)

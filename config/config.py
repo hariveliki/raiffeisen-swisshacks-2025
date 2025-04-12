@@ -8,9 +8,10 @@ load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 
 # Data paths
-CLIENT_STATE_PATH = os.path.abspath("data/client_state.xlsx")
+CLIENT_STATE_PATH = os.path.abspath("data/client_state.csv")
 PRODUCT_PORTFOLIO_PATH = os.path.abspath("data/product_portfolio.docx")
 TRANSCRIPT_PATH = os.path.abspath("data/transcript.m4a")
+BIASES_PATH = os.path.abspath("data/biases.csv")
 
 # Vector store path
 VECTOR_STORE_PATH = os.path.abspath("data/vector_store")

@@ -18,7 +18,8 @@ class DataRetrievalAgent(BaseAgent):
         """Load and index client and product data."""
         # Load raw data
         print("Loading client state data...")
-        self.client_data = DataLoader.load_client_state()
+        client_data_text = DataLoader.load_client_state()
+        self.client_data = client_data_text  # Store the text data
 
         print("Loading product portfolio data...")
         self.product_data = DataLoader.load_product_portfolio()
@@ -27,11 +28,10 @@ class DataRetrievalAgent(BaseAgent):
         print("Creating vector stores for semantic search...")
         vector_store = VectorStore()
 
-        # For client data, convert dictionary to text format for indexing
-        if self.client_data:
-            client_text = "\n".join([f"{k}: {v}" for k, v in self.client_data.items()])
+        # For client data, use the text format for indexing
+        if client_data_text:
             self.client_vector_store = vector_store.create_or_load(
-                client_text, "client_state"
+                client_data_text, "client_state"
             )
 
         # For product data, directly index the text
