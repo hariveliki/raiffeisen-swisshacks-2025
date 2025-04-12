@@ -1,5 +1,7 @@
-from langchain_openai import ChatOpenAI
-from config.config import OPENAI_API_KEY, LLM_MODEL
+from openai import AzureOpenAI
+import os
+from dotenv import load_dotenv
+from config.config import LLM_MODEL
 
 
 class BaseAgent:
@@ -15,14 +17,18 @@ class BaseAgent:
         """
         self.model_name = model_name
         self.temperature = temperature
-        self.llm = self._init_llm()
+        self.client = self._init_client()
 
-    def _init_llm(self):
-        """Initialize the language model."""
-        return ChatOpenAI(
-            model_name=self.model_name,
-            temperature=self.temperature,
-            openai_api_key=OPENAI_API_KEY,
+    def _init_client(self):
+        """Initialize the Azure OpenAI client."""
+        # Load environment variables
+        load_dotenv()
+
+        # Initialize Azure OpenAI client
+        return AzureOpenAI(
+            api_version="2024-02-15-preview",
+            azure_endpoint="https://swisshacks-aoai-westeurope.openai.azure.com/",
+            api_key=os.getenv("AZURE_OPENAI_API_KEY"),
         )
 
     def run(self, *args, **kwargs):
@@ -33,3 +39,25 @@ class BaseAgent:
             NotImplementedError: If the subclass doesn't implement this method.
         """
         raise NotImplementedError("Subclasses must implement the 'run' method.")
+
+    def get_completion(self, messages, temperature=None):
+        """
+        Get a completion from the Azure OpenAI API.
+
+        Args:
+            messages (list): List of message dictionaries with 'role' and 'content'.
+            temperature (float, optional): Override the default temperature.
+
+        Returns:
+            str: The content of the completion.
+        """
+        if temperature is None:
+            temperature = self.temperature
+
+        completion = self.client.chat.completions.create(
+            model=self.model_name,
+            messages=messages,
+            temperature=temperature,
+        )
+
+        return completion.choices[0].message.content
