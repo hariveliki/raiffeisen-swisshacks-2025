@@ -11,213 +11,114 @@ from config.config import CHUNK_SIZE, CHUNK_OVERLAP
 
 
 class SummarizationAgent(BaseAgent):
-    """Agent responsible for creating structured summaries of the client-advisor conversation."""
 
     def __init__(self, *args, **kwargs):
-        """Initialize the summarization agent."""
         super().__init__(*args, **kwargs)
-        self.transcript = None
-        self.text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=CHUNK_SIZE, chunk_overlap=CHUNK_OVERLAP
-        )
 
-    def load_transcript(self):
-        """Load the transcript from the data loader."""
-        print("Loading transcript...")
-        self.transcript = DataLoader.load_transcript()
-        return self.transcript
-
-    def summarize_chunk(self, chunk):
+    def create_structured_summary(
+        self,
+        behavioural_bias_summary,
+        data_quality_check,
+        product_portfolio_check,
+        financial_advises,
+        meeting_notes,
+    ):
         """
-        Summarize a single chunk of the transcript.
+        Create a structured markdown summary with two sections:
+        1. Meeting Notes
+        2. Advisor Suggestions (including behavioral biases, data quality, product portfolio, and financial advice)
 
         Args:
-            chunk (str): A section of the transcript.
+            behavioural_bias_summary (list): List of identified behavioral biases
+            data_quality_check (list): List of data quality findings
+            product_portfolio_check (list): List of product portfolio findings
+            financial_advises (list): List of financial advisor recommendations
+            meeting_notes (dict): Dictionary containing meeting notes and action items
 
         Returns:
-            str: Summary of the chunk.
+            str: Formatted markdown summary
         """
-        prompt_template = """
-        Summarize the following excerpt from a conversation between a financial advisor and a client.
-        Focus on key financial points, questions, concerns, and decisions made.
-        
-        Conversation Excerpt:
-        {chunk}
-        
-        Summary:
-        """
+        # Format meeting notes section
+        meeting_notes_section = "# Meeting Notes\n\n"
 
-        # Format the prompt with the chunk
-        formatted_prompt = prompt_template.format(chunk=chunk)
+        # Add meeting notes if available
+        if meeting_notes and "meeting_notes" in meeting_notes:
+            meeting_notes_section += meeting_notes["meeting_notes"] + "\n\n"
 
-        # Create messages for the API call
-        messages = [
-            {
-                "role": "system",
-                "content": "You are a financial conversation summarizer.",
-            },
-            {"role": "user", "content": formatted_prompt},
-        ]
-
-        # Get summary from Azure OpenAI
-        chunk_summary = self.get_completion(messages)
-
-        return chunk_summary
-
-    def summarize_transcript_chunks(self):
-        """
-        Split the transcript into chunks and summarize each chunk.
-        Then combine the chunk summaries.
-
-        Returns:
-            str: Combined summary of the transcript.
-        """
-        if not self.transcript:
-            self.load_transcript()
-
-        # Split the transcript into chunks
-        chunks = self.text_splitter.split_text(self.transcript)
-        print(f"Transcript split into {len(chunks)} chunks.")
-
-        # Summarize each chunk
-        chunk_summaries = []
-        for i, chunk in enumerate(chunks):
-            print(f"Summarizing chunk {i+1}/{len(chunks)}...")
-            summary = self.summarize_chunk(chunk)
-            chunk_summaries.append(summary)
-
-        # Combine chunk summaries
-        combined_summaries = "\n\n".join(chunk_summaries)
-
-        # Create a final unified summary
-        prompt_template = """
-        Below are summaries of different parts of a conversation between a financial advisor and a client.
-        Create a coherent, concise overall summary of the entire conversation while preserving all key details.
-        
-        Chunk Summaries:
-        {combined_summaries}
-        
-        Overall Summary:
-        """
-
-        # Format the prompt with the combined summaries
-        formatted_prompt = prompt_template.format(combined_summaries=combined_summaries)
-
-        # Create messages for the API call
-        messages = [
-            {
-                "role": "system",
-                "content": "You are a financial conversation summarizer.",
-            },
-            {"role": "user", "content": formatted_prompt},
-        ]
-
-        # Get final summary from Azure OpenAI
-        final_summary = self.get_completion(messages)
-
-        return final_summary
-
-    def create_structured_summary(self):
-        """
-        Create a structured summary with two sections: meeting notes and action items.
-
-        Args:
-            dialogue_analysis (dict): Results from the dialogue analysis agent.
-
-        Returns:
-            dict: Structured summary with two sections.
-        """
-        if not self.transcript:
-            self.load_transcript()
-
-        prompt_template = """
-        Create a concise summary of the following conversation between a financial advisor and a client.
-        The summary should be organized into exactly two sections as outlined below.
-        
-        Transcript:
-        {transcript}
-        
-        Please provide the summary in the following format:
-        
-        Client/Advisor Meeting Notes
-        - [Key point 1]
-        - [Key point 2]
-        - [Key point 3]
-        
-        Agreed upon action items
-        - [Action item 1]
-        - [Action item 2]
-        
-        Keep each point short and clear. Use simple bullet points without any additional formatting.
-        Focus on concrete information and decisions made during the conversation.
-        """
-
-        # Format the prompt with the transcript
-        formatted_prompt = prompt_template.format(transcript=self.transcript)
-
-        # Create messages for the API call
-        messages = [
-            {
-                "role": "system",
-                "content": "You are a financial conversation analyst specializing in concise summaries.",
-            },
-            {"role": "user", "content": formatted_prompt},
-        ]
-
-        # Get structured summary from Azure OpenAI
-        structured_output = self.get_completion(messages)
-
-        # Process the output to extract sections
-        sections = {}
-
-        # Parse the sections
-        if "Client/Advisor Meeting Notes" in structured_output:
-            parts = structured_output.split("Client/Advisor Meeting Notes")[1].split(
-                "Agreed upon action items"
-            )[0]
-            sections["meeting_notes"] = parts.strip()
-
-        if "Agreed upon action items" in structured_output:
-            parts = structured_output.split("Agreed upon action items")[1]
-            sections["action_items"] = parts.strip()
-
-        return sections
-
-    def run(self, summary_type="structured"):
-        """
-        Run the summarization agent to create a summary of the transcript.
-
-        Args:
-            summary_type (str): Type of summary to create
-                ('chunks', 'structured', or 'full').
-
-        Returns:
-            dict or str: The summary results.
-        """
-        if not self.transcript:
-            self.load_transcript()
-
-        if summary_type == "chunks":
-            return self.summarize_transcript_chunks()
-        elif summary_type == "structured":
-            return self.create_structured_summary()
-        elif summary_type == "full":
-            # Get both types of summaries
-            chunk_summary = self.summarize_transcript_chunks()
-            structured_summary = self.create_structured_summary()
-
-            return {
-                "chunk_summary": chunk_summary,
-                "structured_summary": structured_summary,
-            }
-        else:
-            raise ValueError(
-                f"Invalid summary type: {summary_type}. Must be 'chunks', 'structured', or 'full'."
+        # Add action items if available
+        if meeting_notes and "action_items" in meeting_notes:
+            meeting_notes_section += (
+                "## Action Items\n\n" + meeting_notes["action_items"] + "\n\n"
             )
+
+        # Format advisor suggestions section
+        advisor_suggestions_section = "# Advisor Suggestions\n\n"
+
+        # Add behavioral biases if available
+        if behavioural_bias_summary:
+            advisor_suggestions_section += "## Behavioral Biases\n\n"
+            for bias in behavioural_bias_summary:
+                advisor_suggestions_section += bias + "\n"
+            advisor_suggestions_section += "\n"
+
+        # Add data quality findings if available
+        if data_quality_check:
+            advisor_suggestions_section += "## Data Quality\n\n"
+            for finding in data_quality_check:
+                advisor_suggestions_section += finding + "\n"
+            advisor_suggestions_section += "\n"
+
+        # Add product portfolio findings if available
+        if product_portfolio_check:
+            advisor_suggestions_section += "## Product Portfolio\n\n"
+            for finding in product_portfolio_check:
+                advisor_suggestions_section += finding + "\n"
+            advisor_suggestions_section += "\n"
+
+        # Add financial advisor recommendations if available
+        if financial_advises:
+            advisor_suggestions_section += "## Financial Recommendations\n\n"
+            for recommendation in financial_advises:
+                advisor_suggestions_section += recommendation + "\n"
+            advisor_suggestions_section += "\n"
+
+        # Combine both sections
+        markdown_summary = meeting_notes_section + advisor_suggestions_section
+
+        return markdown_summary
+
+    def run(
+        self,
+        behavioural_bias_summary,
+        data_quality_check,
+        product_portfolio_check,
+        financial_advises,
+        meeting_notes,
+    ):
+        """
+        Run the summarization agent to create a structured markdown summary.
+
+        Args:
+            behavioural_bias_summary (list): List of identified behavioral biases
+            data_quality_check (list): List of data quality findings
+            product_portfolio_check (list): List of product portfolio findings
+            financial_advises (list): List of financial advisor recommendations
+            meeting_notes (dict): Dictionary containing meeting notes and action items
+
+        Returns:
+            str: Formatted markdown summary
+        """
+        return self.create_structured_summary(
+            behavioural_bias_summary,
+            data_quality_check,
+            product_portfolio_check,
+            financial_advises,
+            meeting_notes,
+        )
 
 
 if __name__ == "__main__":
     summarization_agent = SummarizationAgent()
-    summary = summarization_agent.run(summary_type="structured")
+    summary = summarization_agent.run()
     with open("output/summarization_agent_output.json", "w") as f:
         json.dump(summary, f)

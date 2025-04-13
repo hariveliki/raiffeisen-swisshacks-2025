@@ -62,7 +62,6 @@ class DataLoader:
                 )
                 return ""
 
-            # Extract text from DOCX file
             text = docx2txt.process(PRODUCT_PORTFOLIO_PATH)
             return text
         except Exception as e:

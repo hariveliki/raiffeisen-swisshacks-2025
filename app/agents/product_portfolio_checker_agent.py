@@ -16,22 +16,12 @@ class ProductPortfolioCheckerAgent(BaseAgent):
         """Initialize the product portfolio checker agent."""
         super().__init__(*args, **kwargs)
 
-    def load_data(self):
-        """Load transcript and product portfolio data."""
-        print("Loading transcript and product portfolio...")
-        self.transcript = DataLoader.load_transcript()
-        self.product_portfolio = DataLoader.load_product_portfolio()
-        self.product_data = DataLoader.load_product_portfolio()
-        vector_store = VectorStore()
-        self.product_vector_store = vector_store.create_or_load(
-            self.product_data, "product_portfolio"
-        )
-
     def extract_product_inquiries(self) -> dict:
         """
         Extract product-related inquiries from the transcript.
         Returns a dictionary of product inquiries.
         """
+        transcript = DataLoader.load_transcript()
         prompt_template = """
         Extract ONLY product-related inquiries or requests from this conversation.
         Focus on specific products or services the client is asking about.
@@ -61,7 +51,7 @@ class ProductPortfolioCheckerAgent(BaseAgent):
             },
             {
                 "role": "user",
-                "content": prompt_template.format(transcript=self.transcript),
+                "content": prompt_template.format(transcript=transcript),
             },
         ]
 
@@ -82,30 +72,38 @@ class ProductPortfolioCheckerAgent(BaseAgent):
         """
         findings = []
 
+        product_data = DataLoader.load_product_portfolio()
+        vector_store = VectorStore()
+        product_vector_store = vector_store.create_or_load(
+            product_data, "product_portfolio"
+        )
+
         for inquiry in inquiries.get("product_inquiries", []):
             product_type = inquiry.get("product_type", "")
             specific_need = inquiry.get("specific_need", "")
-
             search_query = f"{product_type} {specific_need}"
-            print(f"SEARCH QUERY: {search_query}")
-            search_results = self.product_vector_store.similarity_search(
-                search_query, k=1
-            )
-            print(f"SEARCH RESULTS: {search_results}")
+            search_results = product_vector_store.similarity_search(search_query, k=3)
 
             if search_results:
                 relevance_prompt = f"""
-                Given the following product inquiry and retrieved result, determine if the result is relevant to the inquiry.
-                Return only "true" or "false".
-
+                Analyze the following product inquiry and retrieved results to determine if Raiffeisen offers a product that matches the inquiry.
+                
                 Inquiry: {search_query}
-                Retrieved Result: {search_results[0].page_content}
+                
+                Retrieved Results:
+                {chr(10).join([f"Result {i+1}: {result.page_content}" for i, result in enumerate(search_results)])}
+                
+                Based on the above information, determine if Raiffeisen offers a product that matches the inquiry.
+                Return ONLY one of these exact responses:
+                - "EXISTS" if Raiffeisen offers a product that matches the inquiry
+                - "DOES_NOT_EXIST" if Raiffeisen does not offer a product that matches the inquiry
+                - "UNCLEAR" if the information is insufficient to determine
                 """
 
                 relevance_messages = [
                     {
                         "role": "system",
-                        "content": "You are a relevance checker. Respond only with 'true' or 'false'.",
+                        "content": "You are a product portfolio expert. Analyze product inquiries against Raiffeisen's product portfolio and determine if a matching product exists.",
                     },
                     {"role": "user", "content": relevance_prompt},
                 ]
@@ -113,15 +111,17 @@ class ProductPortfolioCheckerAgent(BaseAgent):
                 relevance_response = (
                     self.get_completion(relevance_messages, temperature=0)
                     .strip()
-                    .lower()
+                    .upper()
                 )
 
-                if relevance_response != "true":
+                if relevance_response == "DOES_NOT_EXIST":
                     finding = f"- During the meeting, Haris asked whether Raiffeisen has a solution for {product_type.lower()} which does not currently exist."
                     findings.append(finding)
-                    continue
+                elif relevance_response == "UNCLEAR":
+                    finding = f"- During the meeting, Haris asked about {product_type.lower()}, but the information about this product in our portfolio is unclear."
+                    findings.append(finding)
 
-            if not search_results or search_results[0].page_content.strip() == "":
+            else:
                 finding = f"- During the meeting, Haris asked whether Raiffeisen has a solution for {product_type.lower()} which does not currently exist."
                 findings.append(finding)
 
@@ -143,8 +143,6 @@ class ProductPortfolioCheckerAgent(BaseAgent):
         Returns:
             list: List of findings about product availability and gaps.
         """
-        self.load_data()
-        print("Generating product portfolio report...")
         findings = self.generate_portfolio_report()
         return findings
 
@@ -152,5 +150,5 @@ class ProductPortfolioCheckerAgent(BaseAgent):
 if __name__ == "__main__":
     portfolio_agent = ProductPortfolioCheckerAgent()
     findings = portfolio_agent.run()
-    with open("output/product_portfolio_findings.txt", "w") as f:
-        f.write("\n".join(findings))
+    with open("output/product_portfolio_findings.json", "w") as f:
+        json.dump(findings, f, indent=4)

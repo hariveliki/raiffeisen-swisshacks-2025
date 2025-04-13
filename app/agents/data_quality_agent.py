@@ -13,24 +13,14 @@ class DataQualityAgent(BaseAgent):
     """Agent responsible for validating and cross-referencing conversation data with client state."""
 
     def __init__(self, *args, **kwargs):
-        """Initialize the data quality agent."""
         super().__init__(*args, **kwargs)
-        self.transcript = None
-        self.client_data = None
-        self.validation_results = []
-
-    def load_data(self):
-        """Load both transcript and client state data."""
-        print("Loading transcript and client data...")
-        self.transcript = DataLoader.load_transcript()
-        self.client_data = DataLoader.load_client_state_dict()
-        return self.transcript, self.client_data
 
     def extract_client_info(self) -> dict:
         """
         Extract key client information from the transcript.
         Returns a dictionary of confirmed client information.
         """
+        transcript = DataLoader.load_transcript()
         prompt_template = """
         Extract ONLY factual information about the client from this conversation.
         ONLY include information that is explicitly stated in the conversation.
@@ -59,7 +49,7 @@ class DataQualityAgent(BaseAgent):
             },
             {
                 "role": "user",
-                "content": prompt_template.format(transcript=self.transcript),
+                "content": prompt_template.format(transcript=transcript),
             },
         ]
 
@@ -79,15 +69,13 @@ class DataQualityAgent(BaseAgent):
         Returns a list of validation results.
         """
         validation_results = []
-
+        client_data = DataLoader.load_client_state_dict()
         if not isinstance(extracted_info, dict):
             raise ValueError("Extracted information must be a dictionary")
 
         for extracted_key, extracted_value in extracted_info.items():
-            if extracted_key in self.client_data:
-                client_state_value = self.client_data[extracted_key]
-                print(f"client_state_value: {client_state_value}")
-                print(f"extracted_value: {extracted_value}")
+            if extracted_key in client_data:
+                client_state_value = client_data[extracted_key]
                 if extracted_value not in client_state_value:
                     validation_results.append(
                         {
@@ -103,7 +91,7 @@ class DataQualityAgent(BaseAgent):
     def generate_quality_report(self):
         """
         Generate a comprehensive quality report of the conversation data.
-        Returns a list of findings in a consistent format.
+        Returns a list of findings in a consistent format with bullet points.
         """
         extracted_info = self.extract_client_info()
         validation_results = self.validate_against_client_state(extracted_info)
@@ -113,6 +101,10 @@ class DataQualityAgent(BaseAgent):
             finding = f"- During the meeting, Haris mentioned {result['transcript_key'].lower()} ({result['transcript_value']}). The agent checked the client database noting {result['client_state_key'].lower()} is {result['client_state_value']}."
             findings.append(finding)
 
+        # If no findings, add a default message
+        if not findings:
+            findings.append("- No data quality issues were found in the conversation.")
+
         return findings
 
     def run(self):
@@ -120,10 +112,8 @@ class DataQualityAgent(BaseAgent):
         Run the data quality validation process.
 
         Returns:
-            list: List of findings in a consistent format.
+            list: List of findings in a consistent format with bullet points.
         """
-        self.load_data()
-        print("Generating data quality report...")
         findings = self.generate_quality_report()
         return findings
 
@@ -131,5 +121,5 @@ class DataQualityAgent(BaseAgent):
 if __name__ == "__main__":
     quality_agent = DataQualityAgent()
     findings = quality_agent.run()
-    with open("output/data_quality_findings.txt", "w") as f:
-        f.write("\n".join(findings))
+    with open("output/data_quality_findings.json", "w") as f:
+        json.dump(findings, f, indent=4)

@@ -1,8 +1,13 @@
 import os
 import sys
 import openai
+import json
+from datetime import datetime
+
 from docx import Document
 from docx.shared import Pt
+
+from config.config import OUTPUT_DIR
 
 
 def translate_text(text):
@@ -45,7 +50,3 @@ def save_translated_docx(docx_path):
             new_para = translated_doc.add_paragraph(translated_text)
             new_para.runs[0].font.size = Pt(11)
     translated_doc.save(f"data/product_portfolio_translated.docx")
-
-
-if __name__ == "__main__":
-    save_translated_docx("data/product_portfolio.docx")

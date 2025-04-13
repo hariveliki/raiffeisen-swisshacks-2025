@@ -12,21 +12,7 @@ class BehaviouralBiasAgent(BaseAgent):
     """Agent responsible for identifying behavioral biases in client-advisor conversations."""
 
     def __init__(self, *args, **kwargs):
-        """Initialize the behavioral bias agent."""
         super().__init__(*args, **kwargs)
-        pass
-
-    def load_transcript(self):
-        """Load the transcript from the data loader."""
-        print("Loading transcript...")
-        self.transcript = DataLoader.load_transcript()
-        return self.transcript
-
-    def load_biases(self):
-        """Load the behavioral biases from the data loader."""
-        print("Loading biases...")
-        self.biases = DataLoader.load_biases()
-        return self.biases
 
     def identify_biases(self):
         """
@@ -35,11 +21,11 @@ class BehaviouralBiasAgent(BaseAgent):
         Returns:
             list: Identified behavioral biases.
         """
-        if not self.transcript:
-            self.load_transcript()
+        transcript = DataLoader.load_transcript()
+        biases = DataLoader.load_biases()
 
         biases_str = ""
-        for bias in self.biases:
+        for bias in biases:
             biases_str += f"Category: {bias['category']}\n"
             biases_str += f"Bias: {bias['bias']}\n"
             biases_str += f"Description: {bias['description']}\n"
@@ -55,7 +41,7 @@ class BehaviouralBiasAgent(BaseAgent):
         Behavioral Biases to Look For:
         {biases}
         
-        Provide 3 (or max 5) specific instances where the client exhibited behavioral biases (max 150 characters per bias).
+        Provide 3 specific instances where the client exhibited behavioral biases (max 150 characters per bias).
         Format each finding as:
         - [Client Name] showed [bias name] when [specific behavior/statement].
         
@@ -67,7 +53,7 @@ class BehaviouralBiasAgent(BaseAgent):
         """
 
         formatted_prompt = prompt_template.format(
-            transcript=self.transcript, biases=biases_str
+            transcript=transcript, biases=biases_str
         )
 
         messages = [
@@ -90,12 +76,7 @@ class BehaviouralBiasAgent(BaseAgent):
         Returns:
             list: The identified behavioral biases.
         """
-        self.load_transcript()
-        self.load_biases()
-
-        print("Identifying behavioral biases...")
         biases = self.identify_biases()
-
         return biases
 
 

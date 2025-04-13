@@ -12,7 +12,6 @@ import sys
 from dotenv import load_dotenv
 from app.agents.orchestrator import Orchestrator
 
-# Load environment variables from .env file
 load_dotenv()
 
 
@@ -33,21 +32,15 @@ def main():
     print("Financial Advisor Post-Meeting Analysis System")
     print("=============================================")
 
-    # Check requirements
     if not check_requirements():
         sys.exit(1)
 
-    # Initialize the orchestrator
     orchestrator = Orchestrator()
-
-    # Run the pipeline
     orchestrator.run_pipeline()
 
-    # Generate a human-readable report
-    print("\nGenerating human-readable report...")
+    print("\nGenerating report...")
     report = orchestrator.generate_report()
 
-    # Print a short preview of the report
     print("\nReport Preview:")
     preview_lines = report.strip().split("\n")[:10]
     for line in preview_lines:
