@@ -36,17 +36,7 @@ def main():
         sys.exit(1)
 
     orchestrator = Orchestrator()
-    orchestrator.run_pipeline()
-
-    print("\nGenerating report...")
-    report = orchestrator.generate_report()
-
-    print("\nReport Preview:")
-    preview_lines = report.strip().split("\n")[:10]
-    for line in preview_lines:
-        print(line)
-    print("...")
-    print("See the output directory for the full report.")
+    orchestrator.run()
 
 
 if __name__ == "__main__":
