@@ -16,25 +16,20 @@ class DataRetrievalAgent(BaseAgent):
 
     def load_data(self):
         """Load and index client and product data."""
-        # Load raw data
         print("Loading client state data...")
-        client_data_text = DataLoader.load_client_state()
-        self.client_data = client_data_text  # Store the text data
+        self.client_data_text = DataLoader.load_client_state_txt()
 
         print("Loading product portfolio data...")
         self.product_data = DataLoader.load_product_portfolio()
 
-        # Create vector stores for semantic search
         print("Creating vector stores for semantic search...")
         vector_store = VectorStore()
 
-        # For client data, use the text format for indexing
-        if client_data_text:
+        if self.client_data_text:
             self.client_vector_store = vector_store.create_or_load(
-                client_data_text, "client_state"
+                self.client_data_text, "client_state"
             )
 
-        # For product data, directly index the text
         if self.product_data:
             self.product_vector_store = vector_store.create_or_load(
                 self.product_data, "product_portfolio"

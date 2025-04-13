@@ -6,7 +6,6 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../.
 
 from app.agents.base_agent import BaseAgent
 from app.utils.data_loader import DataLoader
-from app.agents.dialogue_analysis_agent import DialogueAnalysisAgent
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from config.config import CHUNK_SIZE, CHUNK_OVERLAP
 
@@ -14,13 +13,10 @@ from config.config import CHUNK_SIZE, CHUNK_OVERLAP
 class SummarizationAgent(BaseAgent):
     """Agent responsible for creating structured summaries of the client-advisor conversation."""
 
-    def __init__(self, dialogue_analysis_agent=None, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         """Initialize the summarization agent."""
         super().__init__(*args, **kwargs)
         self.transcript = None
-        self.dialogue_analysis_agent = (
-            dialogue_analysis_agent or DialogueAnalysisAgent()
-        )
         self.text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=CHUNK_SIZE, chunk_overlap=CHUNK_OVERLAP
         )
